@@ -14,9 +14,14 @@ MIN_VAL = 1
 MAX_VAL = 9
 SUM = 45
 
-def assert_sum_and_uniqueness(sodukuVars, solver):
-    solver.add(sum(sodukuVars) == SUM)
-    for pair in combinations(sodukuVars, 2):
+def assert_sum_and_uniqueness(areaVars, solver):
+    """ Adds constraints in the Z3 solver for the list of area variables so
+    that a) every variable is unique and b) the sum of all variables equals SUM
+    """
+
+    solver.add(sum(areaVars) == SUM)
+
+    for pair in combinations(areaVars, 2):
         a, b = list(pair)
         solver.add(a != b)
 
@@ -24,7 +29,7 @@ def assert_initvals(sodukuVars, sudokuMatrix, solver):
     for i in range(len(sudokuMatrix)):
         for j in range(len(sudokuMatrix[i])):
 
-            # Our Input matrix sets unknown digits to 0
+            # The input matrix marks unknown digits with 0
             if sudokuMatrix[i][j] != 0:
                 solver.add(sodukuVars[i][j] == sudokuMatrix[i][j])
             else:
@@ -44,7 +49,7 @@ def assert_subgrids(sodukuVars, solver):
 
 def assert_rows(sodukuVars, solver):
     for row in sodukuVars:
-        assert_sum_and_uniqueness(sodukuVars=row, solver=solver)
+        assert_sum_and_uniqueness(areaVars=row, solver=solver)
 
 def assert_columns(sodukuVars, solver):
     for j in range(GRID_SIZE):
@@ -54,9 +59,11 @@ def assert_columns(sodukuVars, solver):
 
         assert_sum_and_uniqueness(areaVars, solver)
 
-# Create a copy of the original sudoku matrix problem and fill
-# the blanks (i.e. zeros) with the solutions from the model
 def print_solution(sudokuMatrix, sudokuVars, model):
+    """ Create a copy of the original sudoku matrix problem and fill
+    the blanks (i.e. zeros) with the solutions from the model
+    """
+
     solvedMatrix = deepcopy(sudokuMatrix)
 
     for i in range(GRID_SIZE):
@@ -76,7 +83,7 @@ def main():
 
     try:
         jsonSudokuInput = json.loads(sudokuInput)
-    except json.JSONEncodeError:
+    except json.JSONDecodeError:
         print("Input is not valid JSON", file=sys.stderr)
         sys.exit(1)
 
